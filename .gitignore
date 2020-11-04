@@ -1,0 +1,6 @@
+software/whisker-main/dist
+software/whisker-main/package-lock.json
+software/whisker-main/node_modules
+software/whisker-web/dist
+software/whisker-web/package-lock.json
+software/whisker-web/node_modules

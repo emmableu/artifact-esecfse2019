@@ -7,6 +7,8 @@ const {Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
 
+//const log = require('minilog')('vm-wrapper');
+
 class VMWrapper {
     /**
      * @param {VirtualMachine} vm .
@@ -82,6 +84,11 @@ class VMWrapper {
          */
         this.projectRunning = false;
 
+        /**
+         * @type {Array}
+         */
+        this.trace = [];
+
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
         this.vm.on(Runtime.PROJECT_RUN_START, this._onRunStart);
@@ -108,6 +115,13 @@ class VMWrapper {
         this.inputs.performInputs();
 
         this.sprites.update();
+        //log.debug("stepping");
+        //console.log(this.sprites.getSprites(x => true));
+        this.trace.push(
+            this.sprites
+                .getSprites()
+                .map(aSprite =>
+                    ({name: aSprite.name, id: aSprite.id, x: aSprite.x, y: aSprite.y})));
         this.vm.runtime._step();
 
         if (!this.running) return;
@@ -265,6 +279,8 @@ class VMWrapper {
 
         this.vm.greenFlag();
         this.startTime = Date.now();
+
+        this.trace = [];
     }
 
     end () {

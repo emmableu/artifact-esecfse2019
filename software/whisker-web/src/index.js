@@ -116,6 +116,14 @@ const initComponents = function () {
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
+    Whisker.testRunner.on(TestRunner.TEST_DUMP,
+        trace => {
+            for (let i = 0; i < trace.length; i++) {
+                trace[i].map(aSprite => Whisker.outputLog.println(`${aSprite.name} ${aSprite.id} x:${aSprite.x} y:${aSprite.y}`));
+                Whisker.outputLog.println(`..`);
+            }
+            Whisker.outputLog.println(`--`);
+        });
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.log(result.error));
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
