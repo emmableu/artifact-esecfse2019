@@ -117,11 +117,26 @@ class VMWrapper {
         this.sprites.update();
         //log.debug("stepping");
         //console.log(this.sprites.getSprites(x => true));
-        this.trace.push(
-            this.sprites
-                .getSprites()
-                .map(aSprite =>
-                    ({name: aSprite.name, id: aSprite.id, x: aSprite.x, y: aSprite.y})));
+        let inputKey = 0;
+        if (this.inputs.inputs.length > 0){
+            inputKey = this.inputs.inputs[0]._data.key;
+        }
+
+        const allSprites = this.sprites.getSprites();
+        if (typeof (allSprites) !== 'undefined') {
+            if (allSprites.length > 0) {
+                const firstSprite = allSprites[0];
+                this.trace.push({x: firstSprite.x, y: firstSprite.y, input: inputKey});
+            }
+        }
+        //
+        // this.trace.push(
+        //     this.sprites
+        //         .getSprites()
+        //         .map(aSprite =>
+        //             ({name: aSprite.name, x: aSprite.x, y: aSprite.y, input: hasInput})));
+        // this.trace.push(this.inputs);
+        // eslint-disable-next-line no-console
         this.vm.runtime._step();
 
         if (!this.running) return;

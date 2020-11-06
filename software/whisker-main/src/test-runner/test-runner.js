@@ -197,7 +197,7 @@ class TestRunner extends EventEmitter {
     /**
      * @returns {string} .
      */
-    static get TEST_DUMP() {
+    static get TEST_DUMP () {
         return 'testDump';
     }
 }

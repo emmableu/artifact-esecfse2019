@@ -2,6 +2,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const path = require('path');
+const NodemonPlugin = require('nodemon-webpack-plugin'); // Ding
 
 module.exports = [
 
@@ -58,6 +59,10 @@ module.exports = [
             path: path.resolve(__dirname, 'dist'),
             filename: '[name].js'
         },
+        // in order to hot reload: https://www.npmjs.com/package/nodemon-webpack-plugin
+        plugins: [
+            new NodemonPlugin() // Dong
+        ],
         module: {
             rules: [
                 {

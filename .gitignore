@@ -5,3 +5,4 @@ software/whisker-web/dist
 software/whisker-web/package-lock.json
 software/whisker-web/node_modules
 *.idea
+*.DS_Store
