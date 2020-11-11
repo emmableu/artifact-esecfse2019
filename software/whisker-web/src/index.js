@@ -58,7 +58,7 @@ const runTests = async function (tests) {
     Whisker.scratch.stop();
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
-    Whisker.outputLog.clear();
+    // Whisker.outputLog.clear();
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
 };
 
@@ -74,6 +74,11 @@ const runAllTests = async function () {
         Whisker.outputRun.println();
         Whisker.outputLog.println();
     }
+};
+
+const quickRun = function () {
+    loadTestsFromString(Whisker.testEditor.getValue());
+    runAllTests();
 };
 
 const initScratch = function () {
@@ -117,7 +122,15 @@ const initComponents = function () {
     Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
     Whisker.testRunner.on(TestRunner.TEST_DUMP,
-        trace => {
+        (message, object) => {
+            if (message) {
+                Whisker.outputLog.println(message);
+            } else {
+                const aSprite = object;
+                Whisker.outputLog.println(`x:${aSprite.x} y:${aSprite.y} input:${aSprite.input}`);
+            }
+        }
+        /* trace => {
             console.log('trace: ', trace);
             // for (let i = 0; i < trace.length; i++) {
             // Whisker.outputLog.println(JSON.stringify(trace[i]));
@@ -125,8 +138,8 @@ const initComponents = function () {
             trace.map(aSprite => Whisker.outputLog.println(`x:${aSprite.x} y:${aSprite.y} input:${aSprite.input}`));
             // Whisker.outputLog.println(`..`);
             // }
-            Whisker.outputLog.println(`--`);
-        });
+            Whisker.outputLog.println(`--`); */
+    );
     Whisker.testRunner.on(TestRunner.TEST_ERROR, result => console.log(result.error));
 
     Whisker.tap13Listener = new TAP13Listener(Whisker.testRunner, Whisker.outputRun.println.bind(Whisker.outputRun));
@@ -137,6 +150,7 @@ const initEvents = function () {
     $('#stop').on('click', () => Whisker.scratch.stop());
     $('#reset').on('click', () => Whisker.scratch.reset());
     $('#run-all-tests').on('click', runAllTests);
+    $('#quick-run').on('click', quickRun);
 
     $('#toggle-input') .on('change', event => {
         if ($(event.target).is(':checked')) {
@@ -180,12 +194,23 @@ const initEvents = function () {
                 .parent()
                 .addClass('active');
             Whisker.outputRun.show();
-            Whisker.outputLog.show();
         } else {
             $(event.target)
                 .parent()
                 .removeClass('active');
             Whisker.outputRun.hide();
+        }
+    });
+    $('#toggle-log').on('change', event => {
+        if ($(event.target).is(':checked')) {
+            $(event.target)
+                .parent()
+                .addClass('active');
+            Whisker.outputLog.show();
+        } else {
+            $(event.target)
+                .parent()
+                .removeClass('active');
             Whisker.outputLog.hide();
         }
     });
@@ -196,14 +221,16 @@ const toggleComponents = function () {
         console.log('Restoring which components are displayed.');
         const componentStates = localStorage.getItem('componentStates');
         if (componentStates) {
-            const [input, tests, editor, output] = JSON.parse(componentStates);
+            const [input, tests, editor, output, log] = JSON.parse(componentStates);
             if (input) $('#toggle-input').click();
             if (tests) $('#toggle-tests').click();
             if (editor) $('#toggle-editor').click();
             if (output) $('#toggle-output').click();
+            if (log) $('#toggle-log').click();
         }
     }
 };
+
 
 $(document).ready(() => {
     initScratch();
@@ -219,7 +246,8 @@ window.onbeforeunload = function () {
             $('#toggle-input').is(':checked'),
             $('#toggle-tests').is(':checked'),
             $('#toggle-editor').is(':checked'),
-            $('#toggle-output').is(':checked')
+            $('#toggle-output').is(':checked'),
+            $('#toggle-log').is(':checked')
         ];
         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
     }

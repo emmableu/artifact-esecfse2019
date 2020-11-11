@@ -3,17 +3,18 @@ const Stepper = require('./stepper');
 
 const Sprites = require('./sprites');
 const {Callbacks} = require('./callbacks');
-const {Inputs} = require('./inputs');
+const {Input, Inputs} = require('./inputs');
 const {RandomInputs} = require('./random-input');
 const {Constraints} = require('./constraints');
 
-//const log = require('minilog')('vm-wrapper');
+// const log = require('minilog')('vm-wrapper');
 
 class VMWrapper {
     /**
      * @param {VirtualMachine} vm .
+     * @param {TestRunner} testRunner .
      */
-    constructor (vm) {
+    constructor (vm, testRunner) {
         /**
          * @type {VirtualMachine}
          */
@@ -87,7 +88,14 @@ class VMWrapper {
         /**
          * @type {Array}
          */
-        this.trace = [];
+        // this.trace = [];
+
+        /**
+         * @type {TestRunner}
+         * the TestRunner object that owns this VmWrapper,
+         * used for printing trace
+         */
+        this.testRunner = testRunner;
 
         this._onRunStart = this.onRunStart.bind(this);
         this._onRunStop = this.onRunStop.bind(this);
@@ -126,7 +134,15 @@ class VMWrapper {
         if (typeof (allSprites) !== 'undefined') {
             if (allSprites.length > 0) {
                 const firstSprite = allSprites[0];
-                this.trace.push({x: firstSprite.x, y: firstSprite.y, input: inputKey});
+                // this.trace.push({x: firstSprite.x, y: firstSprite.y, input: inputKey});
+                let keysDown = this.vm.runtime.ioDevices.keyboard._keysPressed;
+                keysDown = keysDown.map(x => Input.scratchKeyToKeyString(x));
+                if (keysDown.length === 0) {
+                    keysDown.push('None');
+                }
+                this.testRunner.dump(false,
+                    {x: firstSprite.x, y: firstSprite.y, input: keysDown}
+                );
             }
         }
         //
@@ -295,7 +311,7 @@ class VMWrapper {
         this.vm.greenFlag();
         this.startTime = Date.now();
 
-        this.trace = [];
+        // this.trace = [];
     }
 
     end () {
@@ -371,6 +387,7 @@ class VMWrapper {
 
     onRunStop () {
         this.projectRunning = false;
+        this.testRunner.dump('--', false);
     }
 
     /**

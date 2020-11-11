@@ -69,7 +69,7 @@ class TestRunner extends EventEmitter {
     async _executeTest (vm, project, test, props) {
         const result = new TestResult(test);
 
-        const util = new WhiskerUtil(vm, project);
+        const util = new WhiskerUtil(vm, project, this);
         await util.prepare();
 
         const testDriver = util.getTestDriver({
@@ -104,8 +104,8 @@ class TestRunner extends EventEmitter {
             }
 
         } finally {
-            this.emit(TestRunner.TEST_DUMP,
-                testDriver.vmWrapper.trace);
+            // this.emit(TestRunner.TEST_DUMP,
+            //    testDriver.vmWrapper.trace);
             util.end();
         }
 
@@ -122,13 +122,11 @@ class TestRunner extends EventEmitter {
     }
 
     /**
-     * @param {string} sprite .
      * @param {string} message .
-     * @param {string} blockId .
-     * @private
+     * @param {object} object .
      */
-    _dump (sprite, message, blockId) {
-        this.emit(TestRunner.TEST_DUMP, sprite, message, blockId);
+    dump (message, object) {
+        this.emit(TestRunner.TEST_DUMP, message, object);
     }
 
     /**
@@ -200,6 +198,10 @@ class TestRunner extends EventEmitter {
     static get TEST_DUMP () {
         return 'testDump';
     }
+
+    /**
+     * @returns {string} .
+     */
 }
 
 module.exports = TestRunner;
