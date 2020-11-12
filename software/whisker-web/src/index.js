@@ -136,6 +136,7 @@ const initComponents = function () {
                     // Whisker.outputLog.println(`target:${aBlock.name} op:${aBlock.opcode}`);
                     // Whisker.outputLog.println(`op:${aBlock.opcode}`);
                     Whisker.trace.push({
+                        clockTime: object.timestamp,
                         sprite: object.sprite,
                         block: object.block,
                         keysDown: object.keysDown

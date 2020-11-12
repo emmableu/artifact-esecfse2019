@@ -99,9 +99,12 @@ class CoverageGenerator {
                     let keysDown = target.runtime.ioDevices.keyboard._keysPressed;
                     keysDown = keysDown.map(x => Input.scratchKeyToKeyString(x));
 
+                    const clockTime = target.runtime.ioDevices.clock.projectTimer();
+
                     testRunner.dump(false,
                         {
                             type: 'block',
+                            clockTime: clockTime,
                             sprite: {
                                 name: target.getName(),
                                 x: target.x,
