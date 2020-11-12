@@ -1,3 +1,4 @@
+const {Input} = require('../vm/inputs');
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
 
@@ -73,7 +74,7 @@ class CoverageGenerator {
     /**
      * @param {class} Thread .
      */
-    static prepareThread (Thread) {
+    static prepareThread (Thread, testRunner) {
         if (!Thread.hasOwnProperty('real_pushStack')) {
             Thread.real_pushStack = Thread.prototype.pushStack;
             Thread.prototype.pushStack = function (blockId) {
@@ -85,6 +86,38 @@ class CoverageGenerator {
         if (!Thread.hasOwnProperty('real_reuseStackForNextBlock')) {
             Thread.real_reuseStackForNextBlock = Thread.prototype.reuseStackForNextBlock;
             Thread.prototype.reuseStackForNextBlock = function (blockId) {
+
+                const target = this.target;
+                const block = target.blocks.getBlock(this.peekStack());
+                const opcode = target.blocks.getOpcode(block);
+                // XXX: output only blocks of the bowl.
+                if (opcode && target.constructor.name === 'RenderedTarget') {
+
+                    const otherSpritesName = target.runtime.targets
+                        .filter(t => t.sprite).map(t => t.getName());
+
+                    let keysDown = target.runtime.ioDevices.keyboard._keysPressed;
+                    keysDown = keysDown.map(x => Input.scratchKeyToKeyString(x));
+
+                    testRunner.dump(false,
+                        {
+                            type: 'block',
+                            sprite: {
+                                name: target.getName(),
+                                x: target.x,
+                                y: target.y,
+                                touching: otherSpritesName.filter(x =>
+                                    (x !== target.getName() && target.isTouchingSprite(x))
+                                )
+                            },
+                            block: {
+                                id: block.id,
+                                opcode: block.opcode
+                            },
+                            keysDown: keysDown
+                        });
+                }
+
                 if (blockId) _coveredBlockIds.add(blockId);
                 if (this.topBlock) _coveredBlockIds.add(this.topBlock);
                 Thread.real_reuseStackForNextBlock.call(this, blockId);

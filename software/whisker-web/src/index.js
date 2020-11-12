@@ -32,9 +32,9 @@ const loadTestsFromString = function (string) {
     return tests;
 };
 
-const _runTestsWithCoverage = async function (vm, project, tests) {
+const _runTestsWithCoverage = async function (vm, project, tests, testRunner) {
     await Whisker.scratch.vm.loadProject(project);
-    CoverageGenerator.prepareThread(Thread);
+    CoverageGenerator.prepareThread(Thread, testRunner);
     CoverageGenerator.prepare(vm);
 
     const summary = await Whisker.testRunner.runTests(vm, project, tests);
@@ -52,14 +52,17 @@ const _runTestsWithCoverage = async function (vm, project, tests) {
         summaryString,
         coverageString
     ].join('\n'));
+
+    Whisker.outputLog.clear();
+    Whisker.outputLog.print(JSON.stringify(Whisker.trace));
 };
 
 const runTests = async function (tests) {
     Whisker.scratch.stop();
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
     Whisker.outputRun.clear();
-    // Whisker.outputLog.clear();
-    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests);
+    Whisker.outputLog.clear();
+    await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
 };
 
 const runAllTests = async function () {
@@ -70,7 +73,7 @@ const runAllTests = async function () {
         const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
         Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
         Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests);
+        await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, Whisker.testRunner);
         Whisker.outputRun.println();
         Whisker.outputLog.println();
     }
@@ -121,13 +124,28 @@ const initComponents = function () {
     Whisker.testRunner = new TestRunner();
     Whisker.testRunner.on(TestRunner.TEST_LOG, //TODO
         (test, message) => Whisker.outputLog.println(`[${test.name}] ${message}`));
+
+    Whisker.trace = [];
     Whisker.testRunner.on(TestRunner.TEST_DUMP,
         (message, object) => {
             if (message) {
-                Whisker.outputLog.println(message);
-            } else {
-                const aSprite = object;
-                Whisker.outputLog.println(`x:${aSprite.x} y:${aSprite.y} input:${aSprite.input}`);
+                // Whisker.outputLog.println(message);
+            } else if (object) {
+                if (object.type === 'block') {
+                    // const aBlock = object;
+                    // Whisker.outputLog.println(`target:${aBlock.name} op:${aBlock.opcode}`);
+                    // Whisker.outputLog.println(`op:${aBlock.opcode}`);
+                    Whisker.trace.push({
+                        sprite: object.sprite,
+                        block: object.block,
+                        keysDown: object.keysDown
+                    });
+                } else if (object.type === 'sprites') {
+                    // if (object.sprites[1].touchesSprites.length > 0) {
+                    //    alert(object.sprites[1].touchesSprites[0]);
+                    // }
+                    Whisker.trace.push({sprites: object.sprites, keysDown: object.keysDown});
+                }
             }
         }
         /* trace => {

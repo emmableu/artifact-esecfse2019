@@ -123,28 +123,7 @@ class VMWrapper {
         this.inputs.performInputs();
 
         this.sprites.update();
-        //log.debug("stepping");
-        //console.log(this.sprites.getSprites(x => true));
-        let inputKey = 0;
-        if (this.inputs.inputs.length > 0){
-            inputKey = this.inputs.inputs[0]._data.key;
-        }
 
-        const allSprites = this.sprites.getSprites();
-        if (typeof (allSprites) !== 'undefined') {
-            if (allSprites.length > 0) {
-                const firstSprite = allSprites[0];
-                // this.trace.push({x: firstSprite.x, y: firstSprite.y, input: inputKey});
-                let keysDown = this.vm.runtime.ioDevices.keyboard._keysPressed;
-                keysDown = keysDown.map(x => Input.scratchKeyToKeyString(x));
-                if (keysDown.length === 0) {
-                    keysDown.push('None');
-                }
-                this.testRunner.dump(false,
-                    {x: firstSprite.x, y: firstSprite.y, input: keysDown}
-                );
-            }
-        }
         //
         // this.trace.push(
         //     this.sprites
@@ -155,6 +134,35 @@ class VMWrapper {
         // eslint-disable-next-line no-console
         this.vm.runtime._step();
 
+        // log.debug("stepping");
+        // console.log(this.sprites.getSprites(x => true));
+        // let inputKey = 0;
+        // if (this.inputs.inputs.length > 0){
+        //    inputKey = this.inputs.inputs[0]._data.key;
+        // }
+
+        /* const allSprites = this.sprites.getSprites();
+        if (typeof (allSprites) !== 'undefined') {
+            if (allSprites.length > 0) {
+                let keysDown = this.vm.runtime.ioDevices.keyboard._keysPressed;
+                keysDown = keysDown.map(x => Input.scratchKeyToKeyString(x));
+                const allSpritesNames = allSprites.map(aSprite => aSprite.name);
+                const allSpritesFiltered = allSprites.map(aSprite => ({
+                    id: aSprite.id,
+                    name: aSprite.name,
+                    x: aSprite.x,
+                    y: aSprite.y,
+                    direction: aSprite.direction,
+                    touchesSprites: allSpritesNames.filter(anotherSpriteName =>
+                        ((anotherSpriteName !== aSprite.name) &&
+                         (aSprite.isTouchingSprite(anotherSpriteName)))
+                    )
+                }));
+                this.testRunner.dump(false,
+                    {type: 'sprites', keysDown: keysDown, sprites: allSpritesFiltered}
+                );
+            }
+        }*/
         if (!this.running) return;
 
         this.callbacks.callCallbacks(true);
