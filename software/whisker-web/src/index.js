@@ -128,6 +128,7 @@ const initComponents = function () {
     Whisker.trace = [];
     Whisker.testRunner.on(TestRunner.TEST_DUMP,
         (message, object) => {
+            console.log("Testing");
             if (message) {
                 // Whisker.outputLog.println(message);
             } else if (object) {
@@ -136,7 +137,7 @@ const initComponents = function () {
                     // Whisker.outputLog.println(`target:${aBlock.name} op:${aBlock.opcode}`);
                     // Whisker.outputLog.println(`op:${aBlock.opcode}`);
                     Whisker.trace.push({
-                        clockTime: object.timestamp,
+                        clockTime: object.clockTime,
                         sprite: object.sprite,
                         block: object.block,
                         keysDown: object.keysDown

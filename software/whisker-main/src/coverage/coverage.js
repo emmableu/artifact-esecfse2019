@@ -1,4 +1,5 @@
 const {Input} = require('../vm/inputs');
+const Variable = require('../vm/variable');
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
 
@@ -101,6 +102,13 @@ class CoverageGenerator {
 
                     const clockTime = target.runtime.ioDevices.clock.projectTimer();
 
+                    const input = target.blocks.getInputs(block);
+                    const inputContent = Object.keys(input).map((key, index) =>
+                        target.blocks.getBlock(input[key].block)
+                    );
+
+                    const variables = target.variables;
+
                     testRunner.dump(false,
                         {
                             type: 'block',
@@ -109,13 +117,18 @@ class CoverageGenerator {
                                 name: target.getName(),
                                 x: target.x,
                                 y: target.y,
+                                size: target.size,
                                 touching: otherSpritesName.filter(x =>
                                     (x !== target.getName() && target.isTouchingSprite(x))
-                                )
+                                ),
+                                variables: variables
                             },
                             block: {
                                 id: block.id,
-                                opcode: block.opcode
+                                opcode: block.opcode,
+                                fields: target.blocks.getFields(block),
+                                inputs: inputContent,
+                                mutation: target.blocks.getMutation(block)
                             },
                             keysDown: keysDown
                         });
