@@ -139,6 +139,7 @@ const initComponents = function () {
                     Whisker.trace.push({
                         clockTime: object.clockTime,
                         sprite: object.sprite,
+                        stageVariables: object.stageVariables,
                         block: object.block,
                         keysDown: object.keysDown
                     });

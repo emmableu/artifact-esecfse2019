@@ -107,6 +107,8 @@ class CoverageGenerator {
                         target.blocks.getBlock(input[key].block)
                     );
 
+                    const stage = target.runtime.getTargetForStage();
+                    const stageVariables = stage.variables;
                     const variables = target.variables;
 
                     testRunner.dump(false,
@@ -123,6 +125,7 @@ class CoverageGenerator {
                                 ),
                                 variables: variables
                             },
+                            stageVariables: stageVariables,
                             block: {
                                 id: block.id,
                                 opcode: block.opcode,
