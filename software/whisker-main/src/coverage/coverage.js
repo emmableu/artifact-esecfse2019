@@ -2,6 +2,7 @@ const {Input} = require('../vm/inputs');
 const Variable = require('../vm/variable');
 const _coveredBlockIds = new Set();
 const _blockIdsPerSprite = new Map();
+const cloneDeep = require('lodash.clonedeep')
 
 /* Only works with Scratch 3.0 (.sb3) projects. sb2 projects can be easily converted by saving them with Scratch 3.0. */
 class Coverage {
@@ -104,12 +105,12 @@ class CoverageGenerator {
 
                     const input = target.blocks.getInputs(block);
                     const inputContent = Object.keys(input).map((key, index) =>
-                        target.blocks.getBlock(input[key].block)
+                        cloneDeep(target.blocks.getBlock(input[key].block))
                     );
 
                     const stage = target.runtime.getTargetForStage();
-                    const stageVariables = stage.variables;
-                    const variables = target.variables;
+                    const stageVariables = cloneDeep(stage.variables);
+                    const variables = cloneDeep(target.variables);
 
                     testRunner.dump(false,
                         {
