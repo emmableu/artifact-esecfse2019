@@ -121,6 +121,7 @@ class CoverageGenerator {
                                 x: target.x,
                                 y: target.y,
                                 size: target.size,
+                                direction: target.direction,
                                 touching: otherSpritesName.filter(x =>
                                     (x !== target.getName() && target.isTouchingSprite(x))
                                 ),
