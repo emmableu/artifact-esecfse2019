@@ -60,9 +60,26 @@ const _runTestsWithCoverage = async function (vm, project, tests, testRunner) {
 const runTests = async function (tests) {
     Whisker.scratch.stop();
     const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    Whisker.trace = [];
     Whisker.outputRun.clear();
     Whisker.outputLog.clear();
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
+};
+
+const runTestUntilEnoughCoverage = async function (tests) {
+    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    let coverage = null;
+    let coverageRate = 0;
+    do {
+        Whisker.scratch.stop();
+        Whisker.trace = [];
+        Whisker.outputRun.clear();
+        Whisker.outputLog.clear();
+        await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
+        coverage = CoverageGenerator.getCoverage().getCoverage();
+        coverageRate = coverage.covered / coverage.total;
+        console.log(coverageRate);
+    } while (coverageRate < 0.9);
 };
 
 const runAllTests = async function () {
@@ -71,6 +88,7 @@ const runAllTests = async function () {
     Whisker.outputLog.clear();
     for (let i = 0; i < Whisker.projectFileSelect.length(); i++) {
         const project = await Whisker.projectFileSelect.loadAsArrayBuffer(i);
+        Whisker.trace = [];
         Whisker.outputRun.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
         Whisker.outputLog.println(`# project: ${Whisker.projectFileSelect.getName(i)}`);
         await _runTestsWithCoverage(Whisker.scratch.vm, project, Whisker.tests, Whisker.testRunner);
@@ -107,7 +125,7 @@ const initScratch = function () {
 };
 
 const initComponents = function () {
-    Whisker.testTable = new TestTable($('#test-table'), runTests);
+    Whisker.testTable = new TestTable($('#test-table'), runTests, runTestUntilEnoughCoverage);
     Whisker.testTable.setTests([]);
 
     Whisker.outputRun = new Output($('#output-run'));

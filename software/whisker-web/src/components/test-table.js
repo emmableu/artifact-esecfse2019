@@ -6,7 +6,7 @@ const {$} = require('../web-libs');
  * </div>
  */
 class TestTable {
-    constructor (div, runTests) {
+    constructor (div, runTests, runUntilCoverage) {
         this.div = $(div)[0];
         this.table = $(div).find('table');
         this.dataTable = null;
@@ -35,6 +35,13 @@ class TestTable {
             const test = row.data();
             runTests([test]);
         });
+
+        this.table.on('click', '.record-trace', event => {
+            const tr = $(event.target).closest('tr');
+            const row = this.dataTable.row(tr);
+            const test = row.data();
+            runUntilCoverage([test]);
+        });
     }
 
     setTests (tests) {
@@ -56,7 +63,7 @@ class TestTable {
                 {
                     data: 'index',
                     className: 'text-center',
-                    width: '1.5em'
+                    width: '1.0em'
                 },
                 {
                     data: 'name',
@@ -72,6 +79,14 @@ class TestTable {
                     defaultContent:
                         '<button class="btn btn-sm btn-xs btn-outline-secondary run-test">' +
                         '<i class="fas fa-play"></i></button>',
+                    width: '0.5em'
+                },
+                {
+                    orderable: false,
+                    data: null,
+                    defaultContent:
+                        '<button class="btn btn-sm btn-xs btn-outline-secondary record-trace">' +
+                        '<i class="fas fa-circle"></i></button>',
                     width: '0.5em'
                 }
             ],
