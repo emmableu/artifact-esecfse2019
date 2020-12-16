@@ -1,5 +1,6 @@
 const defaults = require('lodash.defaults');
 const random = require('../util/random');
+const CoverageGenerator = require('../coverage/coverage');
 
 class TestDriver {
     /**
@@ -66,6 +67,9 @@ class TestDriver {
 
         this.seedWhisker = random.seedWhisker;
         this.seedScratch = random.seedScratch;
+
+        // add coverage access to the test script
+        this.getCoverage = CoverageGenerator.getCoverage.bind(CoverageGenerator);
 
         if (props.extend) {
             defaults(this, props.extend);

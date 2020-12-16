@@ -4,5 +4,9 @@ software/whisker-main/node_modules
 software/whisker-web/dist
 software/whisker-web/package-lock.json
 software/whisker-web/node_modules
+software/whisker-batch-server/package-lock.json
+software/whisker-batch-server/node_modules
+software/whisker-batch-server/dumped_traces
+software/whisker-batch-server/scratch_projects
 *.idea
 *.DS_Store

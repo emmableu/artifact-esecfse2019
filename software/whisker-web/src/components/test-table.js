@@ -40,7 +40,7 @@ class TestTable {
             const tr = $(event.target).closest('tr');
             const row = this.dataTable.row(tr);
             const test = row.data();
-            runUntilCoverage([test]);
+            runUntilCoverage([test], false);
         });
     }
 

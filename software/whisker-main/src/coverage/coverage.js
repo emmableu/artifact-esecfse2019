@@ -92,7 +92,7 @@ class CoverageGenerator {
                 const target = this.target;
                 const block = target.blocks.getBlock(this.peekStack());
                 const opcode = target.blocks.getOpcode(block);
-                // XXX: output only blocks of the bowl.
+                
                 if (opcode && target.constructor.name === 'RenderedTarget') {
 
                     const otherSpritesName = target.runtime.targets

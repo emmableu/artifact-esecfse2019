@@ -15,6 +15,8 @@ const Output = require('./components/output');
 const Whisker = window.Whisker = {};
 window.$ = $;
 
+const serverUrl = 'http://localhost:3000';
+
 const loadTestsFromString = function (string) {
     /* eslint-disable-next-line no-eval */
     let tests;
@@ -31,6 +33,31 @@ const loadTestsFromString = function (string) {
     Whisker.testTable.setTests(tests);
     return tests;
 };
+
+const getTestsFromServer = async function () {
+    return $.get(`${serverUrl}/test_script`).done(string => loadTestsFromString(string));
+};
+
+const loadProjectListFromServer = async function () {
+    const projectList = await Promise.resolve($.get(`${serverUrl}/project_list`));
+    console.log('Project list loaded');
+    console.log(projectList);
+    return projectList;
+};
+
+const loadProjectFromSever = async function () {
+    const projectName = Whisker.projectList.pop();
+    Whisker.currentProjectName = projectName;
+    console.log(`Loading ${projectName}`);
+    const projectFile = await Promise.resolve($.ajax({
+        url: `${serverUrl}/scratch_project/${projectName}`,
+        xhrFields: {
+            responseType: 'arraybuffer'
+        }
+    }));
+    return projectFile;
+};
+
 
 const _runTestsWithCoverage = async function (vm, project, tests, testRunner) {
     await Whisker.scratch.vm.loadProject(project);
@@ -66,8 +93,13 @@ const runTests = async function (tests) {
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
 };
 
-const runTestUntilEnoughCoverage = async function (tests) {
-    const project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+const runTestUntilEnoughCoverage = async function (tests, loadProjectFromRemote) {
+    let project = null;
+    if (loadProjectFromRemote) {
+        project = await loadProjectFromSever();
+    } else {
+        project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    }
     let coverage = null;
     let coverageRate = 0;
     do {
@@ -80,6 +112,22 @@ const runTestUntilEnoughCoverage = async function (tests) {
         coverageRate = coverage.covered / coverage.total;
         console.log(coverageRate);
     } while (coverageRate < 0.9);
+    if (loadProjectFromRemote) {
+        await $.post(`${serverUrl}/save_trace`, {
+            testName: Whisker.currentProjectName,
+            coverage: coverageRate,
+            trace: JSON.stringify(Whisker.trace)
+        });
+    }
+};
+
+const batchRun = async function () {
+    Whisker.projectList = await loadProjectListFromServer();
+    await getTestsFromServer();
+    while (Whisker.projectList.length > 0) {
+        await runTestUntilEnoughCoverage(Whisker.tests, true);
+        console.log(`Done testing ${Whisker.currentProjectName}`);
+    }
 };
 
 const runAllTests = async function () {
@@ -190,6 +238,7 @@ const initEvents = function () {
     $('#reset').on('click', () => Whisker.scratch.reset());
     $('#run-all-tests').on('click', runAllTests);
     $('#quick-run').on('click', quickRun);
+    $('#batch-run').on('click', batchRun);
 
     $('#toggle-input') .on('change', event => {
         if ($(event.target).is(':checked')) {
