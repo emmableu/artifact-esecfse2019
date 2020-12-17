@@ -93,31 +93,36 @@ const runTests = async function (tests) {
     await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
 };
 
-const runTestUntilEnoughCoverage = async function (tests, loadProjectFromRemote) {
+const runTestUntilEnoughCoverage = async function (tests, nRunsToServer) {
     let project = null;
-    if (loadProjectFromRemote) {
-        project = await loadProjectFromSever();
-    } else {
+    let nRuns = 1;
+    if (isNaN(nRunsToServer)) {
         project = await Whisker.projectFileSelect.loadAsArrayBuffer();
+    } else {
+        project = await loadProjectFromSever();
+        nRuns = nRunsToServer;
     }
-    let coverage = null;
-    let coverageRate = 0;
-    do {
-        Whisker.scratch.stop();
-        Whisker.trace = [];
-        Whisker.outputRun.clear();
-        Whisker.outputLog.clear();
-        await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
-        coverage = CoverageGenerator.getCoverage().getCoverage();
-        coverageRate = coverage.covered / coverage.total;
-        console.log(coverageRate);
-    } while (coverageRate < 0.9);
-    if (loadProjectFromRemote) {
-        await $.post(`${serverUrl}/save_trace`, {
-            testName: Whisker.currentProjectName,
-            coverage: coverageRate,
-            trace: JSON.stringify(Whisker.trace)
-        });
+    for (let i = 0; i < nRuns; i++) {
+        console.log(`${i}-th run`);
+        let coverage = null;
+        let coverageRate = 0;
+        do {
+            Whisker.scratch.stop();
+            Whisker.trace = [];
+            Whisker.outputRun.clear();
+            Whisker.outputLog.clear();
+            await _runTestsWithCoverage(Whisker.scratch.vm, project, tests, Whisker.testRunner);
+            coverage = CoverageGenerator.getCoverage().getCoverage();
+            coverageRate = coverage.covered / coverage.total;
+            console.log(coverageRate);
+        } while (coverageRate < 0.9);
+        if (!isNaN(nRunsToServer)) {
+            await $.post(`${serverUrl}/save_trace/${i}`, {
+                testName: Whisker.currentProjectName,
+                coverage: coverageRate,
+                trace: JSON.stringify(Whisker.trace)
+            });
+        }
     }
 };
 
@@ -125,7 +130,7 @@ const batchRun = async function () {
     Whisker.projectList = await loadProjectListFromServer();
     await getTestsFromServer();
     while (Whisker.projectList.length > 0) {
-        await runTestUntilEnoughCoverage(Whisker.tests, true);
+        await runTestUntilEnoughCoverage(Whisker.tests, 10);
         console.log(`Done testing ${Whisker.currentProjectName}`);
     }
 };

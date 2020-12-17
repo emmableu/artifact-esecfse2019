@@ -54,9 +54,13 @@ app.get('/test_script', (req, res) => {
   })
 })
 
-app.post('/save_trace', (req, res) => {
+app.post('/save_trace/:i', (req, res) => {
   console.log(`received trace of \x1b[36m${req.body.testName}\x1b[0m with coverage ${req.body.coverage}`)
-  fs.writeFile(`${outputFolder}/${req.body.testName}.json`, req.body.trace, err => {
+  const OutputFolder = path.join(outputFolder, req.body.testName)
+  if (!fs.existsSync(OutputFolder)){
+    fs.mkdirSync(OutputFolder);
+  }
+  fs.writeFile(`${OutputFolder}/${req.body.testName}-${req.params.i}.json`, req.body.trace, err => {
     if (err) {
       console.error(err)
       return
